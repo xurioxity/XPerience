@@ -1,0 +1,60 @@
+import { CafeDetails } from '@/components/cafe-details';
+import { BookingForm } from '@/components/booking-form';
+import type { CafeWithGames } from '@/lib/types';
+
+// Fetch cafe details
+async function getCafe(id: string): Promise<CafeWithGames | null> {
+  try {
+    const response = await fetch(`http://localhost:3000/api/cafes/${id}`, {
+      cache: 'no-store',
+    });
+    
+    if (!response.ok) {
+      return null;
+    }
+    
+    return response.json();
+  } catch (error) {
+    console.error('Error fetching cafe:', error);
+    return null;
+  }
+}
+
+export default async function CafePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const cafe = await getCafe(id);
+
+  if (!cafe) {
+    return (
+      <div className="card p-8 text-center">
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          Café Not Found
+        </h1>
+        <p className="text-gray-600">
+          The café you're looking for doesn't exist.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* Main content - 2/3 width on large screens */}
+      <div className="lg:col-span-2 space-y-6">
+        <CafeDetails cafe={cafe} />
+      </div>
+
+      {/* Booking sidebar - 1/3 width on large screens */}
+      <div className="lg:col-span-1">
+        <div className="sticky top-8">
+          <BookingForm cafeId={cafe.id} cafeName={cafe.name} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
