@@ -1,17 +1,22 @@
 import { NextResponse } from 'next/server';
-import db from '@/lib/db';
-import type { TimeSlot } from '@/lib/types';
+import { getSlotsForCafe, isVercel } from '@/lib/mock-data';
 
 // GET /api/cafes/[id]/slots - Get available slots for a cafe
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  try {
-    const { id } = await params;
-    const cafeId = parseInt(id);
+  const { id } = await params;
+  const cafeId = parseInt(id);
 
-    // Get all slots with booking count to calculate remaining capacity
+  // Use mock data on Vercel
+  if (isVercel) {
+    return NextResponse.json(getSlotsForCafe(cafeId));
+  }
+
+  try {
+    const db = (await import('@/lib/db')).default;
+
     const slots = db.prepare(`
       SELECT 
         ts.*,
@@ -21,9 +26,8 @@ export async function GET(
       WHERE ts.cafe_id = ? AND ts.date >= date('now')
       GROUP BY ts.id
       ORDER BY ts.date, ts.start_time
-    `).all(cafeId) as (TimeSlot & { booked_pcs: number })[];
+    `).all(cafeId) as Array<{ available_pcs: number; booked_pcs: number; is_available: number }>;
 
-    // Calculate remaining capacity for each slot
     const slotsWithCapacity = slots.map(slot => ({
       ...slot,
       remaining_pcs: slot.available_pcs - slot.booked_pcs,
@@ -33,10 +37,7 @@ export async function GET(
     return NextResponse.json(slotsWithCapacity);
   } catch (error) {
     console.error('Error fetching slots:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch slots' },
-      { status: 500 }
-    );
+    // Fallback to mock data
+    return NextResponse.json(getSlotsForCafe(cafeId));
   }
 }
-

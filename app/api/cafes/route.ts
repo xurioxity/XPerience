@@ -1,21 +1,23 @@
 import { NextResponse } from 'next/server';
-import db, { initializeDatabase } from '@/lib/db';
-import type { Cafe } from '@/lib/types';
-
-// Initialize database on first API call
-initializeDatabase();
+import { mockCafes, isVercel } from '@/lib/mock-data';
 
 // GET /api/cafes - Get all cafes
 export async function GET() {
+  // Use mock data on Vercel, real DB locally
+  if (isVercel) {
+    return NextResponse.json(mockCafes);
+  }
+
   try {
-    const cafes = db.prepare('SELECT * FROM cafes ORDER BY name').all() as Cafe[];
+    const db = (await import('@/lib/db')).default;
+    const { initializeDatabase } = await import('@/lib/db');
+    initializeDatabase();
+    
+    const cafes = db.prepare('SELECT * FROM cafes ORDER BY name').all();
     return NextResponse.json(cafes);
   } catch (error) {
     console.error('Error fetching cafes:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch cafes' },
-      { status: 500 }
-    );
+    // Fallback to mock data if DB fails
+    return NextResponse.json(mockCafes);
   }
 }
-
