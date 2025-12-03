@@ -1,23 +1,18 @@
 import { CafeDetails } from '@/components/cafe-details';
 import { BookingForm } from '@/components/booking-form';
-import type { CafeWithGames } from '@/lib/types';
+import { mockCafes, getGamesForCafe } from '@/lib/mock-data';
 
-// Fetch cafe details
-async function getCafe(id: string): Promise<CafeWithGames | null> {
-  try {
-    const response = await fetch(`http://localhost:3000/api/cafes/${id}`, {
-      cache: 'no-store',
-    });
-    
-    if (!response.ok) {
-      return null;
-    }
-    
-    return response.json();
-  } catch (error) {
-    console.error('Error fetching cafe:', error);
-    return null;
-  }
+// Get cafe by ID using mock data
+function getCafe(id: string) {
+  const cafeId = parseInt(id);
+  const cafe = mockCafes.find(c => c.id === cafeId);
+  
+  if (!cafe) return null;
+  
+  return {
+    ...cafe,
+    games: getGamesForCafe(cafeId),
+  };
 }
 
 export default async function CafePage({
@@ -26,7 +21,7 @@ export default async function CafePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const cafe = await getCafe(id);
+  const cafe = getCafe(id);
 
   if (!cafe) {
     return (
@@ -57,4 +52,3 @@ export default async function CafePage({
     </div>
   );
 }
-

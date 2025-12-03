@@ -1,26 +1,14 @@
 import Link from 'next/link';
+import { mockCafes } from '@/lib/mock-data';
 import type { Cafe } from '@/lib/types';
 
-// Fetch cafes on the server
-async function getCafes(): Promise<Cafe[]> {
-  try {
-    const response = await fetch(`http://localhost:3000/api/cafes`, {
-      cache: 'no-store',
-    });
-    
-    if (!response.ok) {
-      return [];
-    }
-    
-    return response.json();
-  } catch (error) {
-    console.error('Error fetching cafes:', error);
-    return [];
-  }
+// Get cafes - use mock data directly (works on both local and Vercel)
+function getCafes(): Cafe[] {
+  return mockCafes;
 }
 
-export default async function HomePage() {
-  const cafes = await getCafes();
+export default function HomePage() {
+  const cafes = getCafes();
 
   return (
     <div>
@@ -41,7 +29,7 @@ export default async function HomePage() {
       {cafes.length === 0 ? (
         <div className="card p-8 text-center">
           <p className="text-gray-300">
-            No cafés available at the moment. Please run <code className="bg-gray-800 px-2 py-1 rounded text-purple-400">npm run setup</code> to initialize the database.
+            No cafés available at the moment.
           </p>
         </div>
       ) : (
@@ -128,4 +116,3 @@ export default async function HomePage() {
     </div>
   );
 }
-
