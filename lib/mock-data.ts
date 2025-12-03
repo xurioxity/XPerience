@@ -80,7 +80,17 @@ export function getSlotsForCafe(cafeId: number) {
     { start: '22:00', end: '00:00' },
   ];
 
-  const slots = [];
+  const slots: Array<{
+    id: number;
+    cafe_id: number;
+    date: string;
+    start_time: string;
+    end_time: string;
+    available_pcs: number;
+    is_available: number;
+    remaining_pcs: number;
+    is_bookable: boolean;
+  }> = [];
   let slotId = (cafeId - 1) * 49 + 1;
 
   for (let day = 0; day < 7; day++) {
