@@ -1,4 +1,6 @@
-// Mock data for Vercel deployment (since better-sqlite3 doesn't work on serverless)
+// Mock data for deployment (works everywhere without native dependencies)
+
+import bcrypt from 'bcryptjs';
 
 export const mockCafes = [
   {
@@ -45,6 +47,15 @@ export const mockGames = [
   'Call of Duty: Warzone', 'Rocket League', 'Rainbow Six Siege'
 ];
 
+// Pre-hashed password for 'password123'
+const PASSWORD_HASH = '$2a$10$rQnM1.V5Q5Q5Q5Q5Q5Q5QOK5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q';
+
+export const mockOwners = [
+  { id: 1, cafe_id: 1, username: 'gamezone_owner', password_hash: bcrypt.hashSync('password123', 10), email: 'owner@gamezone.com' },
+  { id: 2, cafe_id: 2, username: 'cyberknights_owner', password_hash: bcrypt.hashSync('password123', 10), email: 'owner@cyberknights.com' },
+  { id: 3, cafe_id: 3, username: 'pixelparadise_owner', password_hash: bcrypt.hashSync('password123', 10), email: 'owner@pixelparadise.com' },
+];
+
 // Generate games for each cafe
 export function getGamesForCafe(cafeId: number) {
   return mockGames.map((game, index) => ({
@@ -70,7 +81,7 @@ export function getSlotsForCafe(cafeId: number) {
   ];
 
   const slots = [];
-  let slotId = (cafeId - 1) * 49 + 1; // 7 days * 7 slots = 49 slots per cafe
+  let slotId = (cafeId - 1) * 49 + 1;
 
   for (let day = 0; day < 7; day++) {
     const date = new Date();
@@ -95,7 +106,7 @@ export function getSlotsForCafe(cafeId: number) {
   return slots;
 }
 
-// In-memory bookings storage (will reset on each deployment, but works for demo)
+// In-memory bookings storage
 export const mockBookings: Array<{
   id: number;
   slot_id: number;
@@ -136,6 +147,6 @@ export function getBookingsByCafe(cafeId: number) {
   return mockBookings.filter(b => b.cafe_id === cafeId);
 }
 
-// Check if we're running on Vercel
-export const isVercel = process.env.VERCEL === '1';
-
+export function getOwnerByUsername(username: string) {
+  return mockOwners.find(o => o.username === username);
+}

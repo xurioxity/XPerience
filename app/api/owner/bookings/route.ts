@@ -1,43 +1,34 @@
 import { NextResponse } from 'next/server';
-import db from '@/lib/db';
 import { getSession } from '@/lib/auth';
-import type { BookingWithDetails } from '@/lib/types';
+import { mockCafes, getSlotsForCafe, getBookingsByCafe } from '@/lib/mock-data';
 
 // GET /api/owner/bookings - Get all bookings for owner's cafe
 export async function GET() {
   try {
-    // Verify owner session
     const session = await getSession();
 
     if (!session) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get all bookings for this cafe
-    const bookings = db.prepare(`
-      SELECT 
-        b.*,
-        c.name as cafe_name,
-        ts.date,
-        ts.start_time,
-        ts.end_time
-      FROM bookings b
-      JOIN cafes c ON b.cafe_id = c.id
-      JOIN time_slots ts ON b.slot_id = ts.id
-      WHERE b.cafe_id = ?
-      ORDER BY ts.date DESC, ts.start_time DESC
-    `).all(session.cafeId) as BookingWithDetails[];
+    const bookings = getBookingsByCafe(session.cafeId);
+    const cafe = mockCafes.find(c => c.id === session.cafeId);
+    const slots = getSlotsForCafe(session.cafeId);
 
-    return NextResponse.json(bookings);
+    const bookingsWithDetails = bookings.map(booking => {
+      const slot = slots.find(s => s.id === booking.slot_id);
+      return {
+        ...booking,
+        cafe_name: cafe?.name,
+        date: slot?.date,
+        start_time: slot?.start_time,
+        end_time: slot?.end_time,
+      };
+    });
+
+    return NextResponse.json(bookingsWithDetails);
   } catch (error) {
     console.error('Error fetching owner bookings:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch bookings' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch bookings' }, { status: 500 });
   }
 }
-
