@@ -35,7 +35,7 @@ export default async function CafePage({
           Café Not Found
         </h1>
         <p className="text-gray-600">
-          The café you're looking for doesn't exist.
+          The café you&apos;re looking for doesn&apos;t exist.
         </p>
       </div>
     );

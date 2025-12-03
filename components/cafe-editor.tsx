@@ -15,22 +15,21 @@ export function CafeEditor({ cafeId }: CafeEditorProps) {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetchCafe();
-  }, [cafeId]);
-
-  async function fetchCafe() {
-    try {
-      const response = await fetch(`/api/cafes/${cafeId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setCafe(data);
+    async function loadCafe() {
+      try {
+        const response = await fetch(`/api/cafes/${cafeId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setCafe(data);
+        }
+      } catch (error) {
+        console.error('Error fetching cafe:', error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error fetching cafe:', error);
-    } finally {
-      setLoading(false);
     }
-  }
+    loadCafe();
+  }, [cafeId]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

@@ -239,7 +239,7 @@ export function BookingForm({ cafeId, cafeName }: BookingFormProps) {
             }
           />
           <p className="text-xs text-gray-400 mt-1">
-            We'll send booking confirmation to this email
+            We&apos;ll send booking confirmation to this email
           </p>
         </div>
 
